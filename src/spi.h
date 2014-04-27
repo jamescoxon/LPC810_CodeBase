@@ -52,6 +52,7 @@ extern "C" {
 
 #define SPI_TXDATCTL_EOT        (1 << 20)
 #define SPI_TXDATCTL_FSIZE(s)   ((s) << 24)
+#define SPI_TXDATCTL_TXSSEL_N   (1 << 16)
 
 #define SPI_STAT_RXRDY          (1 << 0)
 #define SPI_STAT_TXRDY          (1 << 1)

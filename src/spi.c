@@ -58,7 +58,7 @@ void spiInit(LPC_SPI_TypeDef *SPIx, uint32_t div, uint32_t delay)
 uint8_t spiTransfer(LPC_SPI_TypeDef *SPIx, uint8_t data)
 {
   while ( (SPIx->STAT & SPI_STAT_TXRDY) == 0 );
-  SPIx->TXDATCTL = SPI_TXDATCTL_FSIZE(8-1) | SPI_TXDATCTL_EOT | data;
+  SPIx->TXDATCTL = SPI_TXDATCTL_FSIZE(8-1) | SPI_TXDATCTL_EOT |SPI_TXDATCTL_TXSSEL_N | data;
   while ( (SPIx->STAT & SPI_STAT_RXRDY) == 0 );
   return SPIx->RXDAT;
 }

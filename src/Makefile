@@ -34,6 +34,7 @@ CFLAGS += $(INC) -D__USE_CMSIS # -DCLOCK_SETUP=1
 BLINKY_OBJS = main.o \
               gpio.o \
               uart.o \
+              gps.o \
               mrt.o \
               printf.o \
               printf-retarget.o \

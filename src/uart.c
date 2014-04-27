@@ -60,11 +60,17 @@ void uart0Init(uint32_t baudRate)
   /* Clear the status bits */
   LPC_USART0->STAT = UART_STATUS_CTSDEL | UART_STATUS_RXBRKDEL;
 
+  /* enable rx interrupts (http://jaromir.xf.cz/phone/phone1.html) */
+  LPC_USART0->INTENSET = (1 << 0);
+    
   /* Enable UART0 interrupt */
   NVIC_EnableIRQ(UART0_IRQn);
 
   /* Enable UART0 */
   LPC_USART0->CFG |= UART_ENABLE;
+    
+  serialBuffer_read = 0;
+  serialBuffer_write = 0;
 }
 
 void uart0SendChar(char buffer)
@@ -72,6 +78,13 @@ void uart0SendChar(char buffer)
   /* Wait until we're ready to send */
   while (!(LPC_USART0->STAT & UART_STATUS_TXRDY));
   LPC_USART0->TXDATA = buffer;
+}
+
+void uart0SendByte(uint8_t buffer)
+{
+    /* Wait until we're ready to send */
+    while (!(LPC_USART0->STAT & UART_STATUS_TXRDY));
+    LPC_USART0->TXDATA = buffer;
 }
 
 void uart0Send(char *buffer, uint32_t length)
@@ -83,3 +96,47 @@ void uart0Send(char *buffer, uint32_t length)
     length--;
   }
 }
+
+//Lifted directly from https://github.com/devmapal/LPC810_Pong
+// Ideally this should be interrupt driven
+char uart0ReceiveChar()
+{
+	if (LPC_USART0->STAT & UART_STATUS_RXRDY)
+		return LPC_USART0->RXDATA;
+    
+	return 0;
+}
+
+// (http://jaromir.xf.cz/phone/phone1.html)
+void UART0_IRQHandler(void)
+{
+	char temp;
+	int intstat = LPC_USART0->INTSTAT;
+	if(intstat & (1 << 0))
+    {
+        serialBuffer[serialBuffer_write] = LPC_USART0->RXDATA;
+        
+		if(serialBuffer_write < 64){
+            serialBuffer_write++;
+        }
+        else{
+            serialBuffer_write = 0;
+        }
+        //uart0SendChar(temp); //Echo characters to UART0
+    }
+}
+
+uint8_t UART0_available(){
+    return serialBuffer_write;
+}
+
+void UART0_printBuffer(){
+    uint8_t i;
+    
+    for(i=0; i<serialBuffer_write; i++){
+        uart0SendChar(serialBuffer[i]);
+    }
+    serialBuffer_write = 0;
+}
+
+
